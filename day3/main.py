@@ -8,13 +8,13 @@ def parse(inputPath):
 # Puzzle 1
 def solve1(inputData):
     # Regex for matching substring of this type: "mul(1,223)"
-    pattern = r"mul\(\d{1,3},\d{1,3}\)"
-    correctCommands = re.findall(pattern, inputData)
-    parsedCommands = list(map(lambda s: re.findall(r"\d{1,3}", s), correctCommands))
-    totalSum = 0
-    for a, b in parsedCommands:
-        totalSum += int(a)*int(b)
-    return totalSum
+    pattern = r"mul\((\d{1,3}),(\d{1,3})\)"
+    mulResults = map(
+        lambda c:
+            int(c.group(1)) * int(c.group(2)),
+        re.finditer(pattern, inputData)
+    )
+    return sum(mulResults)
 
 # Puzzle 2
 def solve2(inputData):
