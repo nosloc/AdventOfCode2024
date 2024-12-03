@@ -19,23 +19,24 @@ def solve1(inputData):
 # Puzzle 2
 def solve2(inputData):
     # Match mul(x,y), do(), don't()
-    pattern = r"mul\(\d{1,3},\d{1,3}\)|do\(\)|don\'t\(\)"
-    commands = re.findall(pattern, inputData)
+    pattern = r"mul\((\d{1,3}),(\d{1,3})\)|(do\(\))|(don\'t\(\))"
+    commands = re.finditer(pattern, inputData)
     #print(commands)
     isenable = True
     totalSum = 0
     for c in commands:
-        match c:
-            case "do()":
-                isenable = True
-            case "don't()":
-                isenable = False
-            case _:
-                if isenable:
-                    a,b = re.findall(r"\d{1,3}",c)
-                    a = int(a)
-                    b = int(b)
-                    totalSum += a * b
+        if c.group(3): #do()
+            isenable = True
+            continue
+        if c.group(4): #don't()
+            isenable = False
+            continue
+
+        # mul(a,b)
+        if isenable:
+            a = int(c.group(1)) 
+            b = int(c.group(2))
+            totalSum += a * b
     return totalSum
 
 
