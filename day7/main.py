@@ -11,8 +11,8 @@ def format(lines):
 
 
 # Puzzle 1 
-def isValid(res, nums, prefix=""):
-    #print(f"{prefix}isValid({res, nums, allowConcatenation})")
+def isValid(res, nums, allowConc=False, prefix=""):
+    #print(f"{prefix}isValid({res, nums, allowConc})")
     l = len(nums)
     if l == 0:
         return False
@@ -28,55 +28,27 @@ def isValid(res, nums, prefix=""):
         #If the res mod lastNum != 0 the the last operation can't be a *
         if (res%lastNum == 0):
             #print(f"{prefix}Trying div")
-            if (isValid(res//lastNum, remaining, prefix=prefix+'\t')):
+            if (isValid(res//lastNum, remaining, allowConc, prefix=prefix+'\t')):
                 return True
+        if (allowConc):
+            #print(f"{prefix} trying conc")
+            l = len(str(lastNum))
+            part2 = res%(10**l)
+            part1 = res//(10**l)
+            if(part2==lastNum):
+                if isValid(part1, remaining, allowConc, prefix=prefix+'\t'):
+                    return True
         #print(f"{prefix}trying minus")
-        return isValid(res-lastNum, remaining, prefix= prefix + "\t")
+        return isValid(res-lastNum, remaining, allowConc, prefix= prefix + "\t")
 
-def solve(equations):
+def solve(equations, allowConc=False):
     counter = 0
     for e in equations:
         res = e["Result"]
         nums = e["Numbers"]
-        if isValid(res, nums):
+        if isValid(res, nums, allowConc):
             counter += res
     return counter
-
-def isValidBruteForce(res, sofar, numbers, first=False, prefix=""):
-    #print(f"{prefix}res={res}, sofar={sofar}, numbers={numbers}")
-    if len(numbers)==0:
-        return sofar==res
-    if sofar > res:
-        return False
-    # Multiplication
-    newSofar = sofar if not first else 1
-    if isValidBruteForce(res, newSofar*numbers[0], numbers[1:], prefix=prefix+"\t"):
-        return True
-    # Concatenation
-    newSofar = int(str(sofar)+str(numbers[0]))
-    if isValidBruteForce(res, newSofar, numbers[1:], prefix=prefix+"\t"):
-        return True
-    # Addition
-    if isValidBruteForce(res, sofar+numbers[0], numbers[1:], prefix=prefix+"\t"):
-        return True
-    return False
-
-
-def solve2(equations):
-    counter = 0
-    i = 0
-    l = len(equations)
-    for e in equations:
-        i+=1
-        print(f"Progress {i/l*100:.2f}%", end="\r")
-        res = e["Result"]
-        nums = e["Numbers"]
-        if isValidBruteForce(res, 0, nums, first=True):
-            counter += res
-        #print()
-    print()
-    return counter
-
 
 # Main
 inputFile = "input.txt"
@@ -86,5 +58,5 @@ lines = parse(inputFile)
 parts = format(lines)
 answer1 = solve(parts)
 print(f"Answer1 : {answer1}")
-answer2 = solve2(parts)
+answer2 = solve(parts, True)
 print(f"Answer2 : {answer2}")
