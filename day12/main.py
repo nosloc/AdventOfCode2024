@@ -50,7 +50,7 @@ def solve1(garden):
 def solve2(garden):
     visited = set()
     height = len(garden)
-    print(f"{height}")
+    #print(f"{height}")
     width = len(garden[0])
     inbound = lambda x,y: x >= 0 and x < height and y >= 0 and y < width
     result_counter = 0
@@ -67,7 +67,7 @@ def solve2(garden):
                 area = 0
                 nb_side = 0
                 while(len(next_to_visit)!=0):
-                    print(f"{current_plot}, {next_to_visit}, {nb_side}, {area}")
+                    #print(f"{current_plot}, {next_to_visit}, {nb_side}, {area}")
                     c_x, c_y = next_to_visit.pop(0)
                     area+=1
                     visited.add((c_x,c_y))
@@ -91,7 +91,7 @@ def solve2(garden):
                                         first_tile = next_tile
                                         first_direction = curr_direction
                                         first = False
-                                    print(f"{next_tile}, {curr_direction}, {curr_side}")
+                                    #print(f"{next_tile}, {curr_direction}, {curr_side}")
                                     cur_x, cur_y = next_tile
                                     #if (c_x, c_y) not in visited:
                                     #    area += 1
@@ -104,7 +104,7 @@ def solve2(garden):
                                             curr_direction = curr_side
                                             curr_side = getPreviousDirection(curr_side)
                                             next_tile = (accross_boundary_x, accross_boundary_y)
-                                            print("adding a new side because of across boundary")
+                                            #print("adding a new side because of across boundary")
                                             nb_side +=1
                                             continue
                                     sides_tiles.add((cur_x, cur_y))
@@ -115,14 +115,14 @@ def solve2(garden):
                                         next_tile = (cur_x, cur_y)
                                         curr_direction = getNextDirection(curr_direction)
                                         curr_side = getNextDirection(curr_side)
-                                        print("adding a new side because of turning")
+                                        #print("adding a new side because of turning")
                                         nb_side += 1
                                     else:
                                         next_tile = (along_dir_x, along_dir_y)
                 #print(f"perimeter*area= {perimeter}*{area}= {perimeter*area}")
-                print(area, nb_side)
+                #print(area, nb_side)
                 result_counter += nb_side*area
-                print(f"for {current_plot} the result_counter is {nb_side*area}")
+                #print(f"for {current_plot} the result_counter is {nb_side*area}")
     return result_counter
     
                     
