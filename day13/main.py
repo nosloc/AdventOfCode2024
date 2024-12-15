@@ -74,7 +74,8 @@ def solve2(equations):
         res = e.solve()
         if res!=None:
             a, b = res
-            counter += a*3 + b
+            if (a>=0 and b>=0):
+                counter += a*3 + b
     return counter
 
 
