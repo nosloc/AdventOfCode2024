@@ -1,3 +1,4 @@
+import random
 import sys
 import re
 
@@ -28,6 +29,7 @@ class Computer():
             exit(1)
     def adv(self, op):
         # Equivalent to A = A >> combo(op)
+        #print("A = A >> combo(op)")
         op = self.combo_value(op)
         deno = 2**op
         res = self.A/deno
@@ -36,24 +38,29 @@ class Computer():
         self.PC += 2
     def bxl(self, op):
         # Equivalent to B = B XOR op
+        #print("B = B XOR op")
         self.B = self.B ^ op
         self.PC += 2
     def bst(self, op):
         # Equivalent to B = last 3 bits of combo(op)
+        #print("B = last 3 bits of combo(op)")
         op = self.combo_value(op)
         self.B = op%8
         self.PC += 2
     def jnz(self, op):
+        #print("Jump if A != 0")
         if self.A != 0:
             self.PC = op
         else :
             self.PC += 2
     def bxc(self, op):
         # Equivalent to B = B XOR C
+        #print("B = B XOR C")
         self.B = self.B ^ self.C
         self.PC += 2
     def out(self, op, expected_output = []):
         # Equivalent to output += last 3 bits of combo(op)
+        #print("output += last 3 bits of combo(op)")
         op = self.combo_value(op)
         self.output.append(op%8)
         if len(expected_output) > 0:
@@ -67,6 +74,7 @@ class Computer():
         self.PC+=2
     def bdv(self, op):
         # Equivalent to B = A >> combo(op)
+        #print("B = A >> combo(op)")
         op = self.combo_value(op)
         deno = 2**op
         res = self.A/deno
@@ -75,6 +83,7 @@ class Computer():
         self.PC += 2
     def cdv(self, op):
         # Equivalent to C = A >> combo(op)
+        #print("C = A >> combo(op)")
         op = self.combo_value(op)
         deno = 2**op
         res = self.A/deno
@@ -142,6 +151,7 @@ class Computer():
         self.PC = 0
         self.output = []
 
+
 def parse(input_file_name):
     program = []
     with open(input_file_name) as file:
@@ -165,28 +175,85 @@ def parse(input_file_name):
     return c
 
 def solve1(c):
-    c.run_all_program(debug=True)
+    c.run_all_program(debug=False)
     answer1 = ""
     for i in c.output:
         answer1 += str(i)
         answer1 += ","
     return answer1[:-1]
-def solve2(c):
-    c.reset()
-    c.run_all_program(debug=False)
-    expected_res = c.program
-    c.reset()
-    for i in range(2147483648):
-        c.reset()
-        c.A = i
-        c.run_all_program(expected_output=expected_res)
-        print(f"Try with A = {i}, progress : {i/2147483648*100:.2f}%, last output = {c.output}" + " "*10, end="\r")
-        if (c.output == expected_res):
-            print()
-            return i 
 
+# This overfit my input
+def solve2(c, program = []):
+    a = 1
+    working_values = []
+    #First loop of the program
+    # Each iteration only care about 10 first bits of a
+    for a in range(2**10):
+        res, _ = quick_solver_one_loop(a)
+        if res == program[0]:
+            working_values.append(a)
+    print(f"Loop 0 : {len(working_values)}")
+    #for w in working_values:
+        #print(f"{bin(w):>32}")
+        #print(f"{quick_solver(w)}")
+    # Next loops of the program
+    for loop in range(1, len(program)):
+        print()
+        new_working_values = []
+        for a in working_values:
+            for i in range(8):
+                new_a = (i << 7) | (a >> (3*loop))
+                res, _ = quick_solver_one_loop(new_a)
+                if res == program[loop]:
+                    new_working_values.append(new_a << (3*loop) | (a & (2**(3*loop) -1)))
+        working_values = new_working_values
+        print(f"Loop {loop} : {len(working_values)}")
+        #for w in working_values:
+            #print(f"{bin(w):>32}")
+            #print(f"{quick_solver(w)}")
+    return min(working_values)
 
+def solve2BruteForce(program):
+    loop = len(program)
+    working_values = []
+    for a in range(2**(10+3*(loop))):
+        print(f"Progress : {a/(2**(10+3*(loop)))*100:.2f}%", end="\r")
+        res= quick_solver(a)
+        if len(res) < loop:
+            continue
+        if res[0:loop+1] == program[0:loop+1]:
+            working_values.append(a)
+    print()
+    print(f"Loop {loop} : {len(working_values)}")
+
+    #for w in working_values:
+        #print(f"{bin(w):>32}")
+        #print(f"{quick_solver(w)}")
+    
+    return 0
+
+            
+    
+
+# this overfit my input
+def quick_solver_one_loop(a):
+    A = a
+    A1 = A >> 3
+    temp = A >> ((A & 7) ^ 5)
+    B1 = ((A & 7) ^ 3) ^ temp
+    res = B1 & 7
+    
+    A = A1
+    return res, A
+
+def quick_solver(a):
+    output = []
+    while a != 0:
+        res, a = quick_solver_one_loop(a)
+        output.append(res)
+    return output
 #Main 
+
 
 input_file = "input.txt"
 if len(sys.argv)>=2:
@@ -198,5 +265,7 @@ if len(sys.argv)>=2:
 c = parse(input_file)
 answer1 = solve1(c)
 print(f"Answer1 : {answer1}")
-answer2 = solve2(c)
+c.reset()
+answer2 = solve2(c, c.program)
+#answer2 = solve2BruteForce(c.program)
 print(f"Answer2 : {answer2}")
