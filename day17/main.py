@@ -92,7 +92,7 @@ class Computer():
         self.PC += 2
 
 
-    def run_single_instruction(self, debug = False, expected_output = []):
+    def run_single_instruction(self, debug = False, expected_output = [], one_loop = False):
         if self.program == []:
             print("Error program is empty")
             exit(1)
@@ -110,6 +110,8 @@ class Computer():
                     self.bst(op)
                 elif opcode == 3:
                     self.jnz(op)
+                    if (one_loop):
+                        return True
                 elif opcode == 4:
                     self.bxc(op)
                 elif opcode == 5:
@@ -128,7 +130,7 @@ class Computer():
                     print(f"Doing opcode : {opcode} with operand {op}")
                     print(self.get_status()) 
                 return False
-    def run_all_program(self, p = None, debug=False, expected_output = []):
+    def run_all_program(self, p = None, debug=False, expected_output = [], one_loop = False):
         if p != None:
             self.program = p
         if p == []:
@@ -137,8 +139,9 @@ class Computer():
         else:
             end = False
             while(not end):
-                end = self.run_single_instruction(debug, expected_output)
+                end = self.run_single_instruction(debug, expected_output, one_loop)
             #print(f"Output is : {self.output}")
+        return self.output
     def load_program(self, program):
         self.program = program
     def get_status(self):
@@ -233,6 +236,24 @@ def solve2BruteForce(program):
     return 0
 
             
+def more_generic_solve2(c, program, prefix = 0, loop_number = 0):
+    #print(f"Prefix {prefix}, loop_number {loop_number}")
+    prefix = prefix << 3
+    for i in range(8):
+        c.reset()
+        val =  prefix + i
+        c.A = val
+        res = c.run_all_program(one_loop = True)[0]
+        #print(f"\t A = {bin(val)}, res = {res}, expected {program[len(program) - loop_number -1]}")
+        if (res == program[len(program) - loop_number -1]):
+            #print("\t", quick_solver(val))
+            if (loop_number == len(program)):
+                return c.A
+            res2 = more_generic_solve2(c, program, val, loop_number + 1)
+            if res2!=None:
+                return res2
+    return None
+        
     
 
 # this overfit my input
@@ -266,6 +287,8 @@ c = parse(input_file)
 answer1 = solve1(c)
 print(f"Answer1 : {answer1}")
 c.reset()
-answer2 = solve2(c, c.program)
+#answer2 = solve2(c, c.program)
+#print(bin(answer2))
 #answer2 = solve2BruteForce(c.program)
+answer2 = more_generic_solve2(c, c.program)
 print(f"Answer2 : {answer2}")
